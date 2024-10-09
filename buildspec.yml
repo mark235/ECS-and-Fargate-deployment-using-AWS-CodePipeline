@@ -4,9 +4,9 @@ env:
   variables:
     AWS_REGION: "us-east-1"                  # e.g., us-west-2
     AWS_ACCOUNT_ID: "905418229977"      # e.g., 123456789012
-    REPO_NAME: "pipeline"                # e.g., ECR Repo Name
+    REPO_NAME: "demo"                # e.g., ECR Repo Name
     IMAGE_TAG: "latest" 
-    ecs_container_name: "app"                       # You can change this if needed
+    ecs_container_name: "pipeline"                       # You can change this if needed
 
 phases:
   pre_build:
