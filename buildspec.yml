@@ -4,16 +4,16 @@ env:
   variables:
     AWS_REGION: "us-east-1"
     AWS_ACCOUNT_ID: "905418229977"
-    REPO_NAME: "ecs-fargate-app"   # Updated the repo name to match ECR
-    IMAGE_TAG: "nginx-latest"      # Changed tag to match Docker conventions (no special characters)
+    REPO_NAME: "ecs-fargate-app"
+    IMAGE_TAG: "latest"
     ECS_CONTAINER_NAME: "web-app-container"
 
 phases:
   pre_build:
     commands:
       - echo "Starting pre-build stage..."
-      - echo "Logging in to Docker Hub using access token..."
-      - echo dckr_pat_BLGX_Mo4j1b_XbCc-W8yHMjNkDU | docker login --username mark235 --password-stdin
+      - echo "Logging in to Docker Hub..."
+      - docker login -u mark235 -p dckr_pat_BLGX_Mo4j1b_XbCc-W8yHMjNkDU
       - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       - echo "Pre-build stage completed."
@@ -31,9 +31,9 @@ phases:
       - echo "Pushing the Docker image to Amazon ECR..."
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
       - echo "Writing image definitions file..."
-      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG > /codebuild/output/imagedefinitions.json
       - echo "Post-build stage completed."
 
 artifacts:
   files:
-    - imagedefinitions.json
+    - /codebuild/output/imagedefinitions.json
