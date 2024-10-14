@@ -1,23 +1,18 @@
-# Use the official Amazon Linux 2 image as the base image
-FROM amazonlinux:2
+# Use an official Node.js runtime as a parent image
+FROM node:14
 
-# Install necessary packages, including amazon-efs-utils
-RUN yum install -y amazon-efs-utils python3 && \
-    yum clean all
+# Set the working directory in the container
+WORKDIR /app
 
-# Create a directory for the web content
-RUN mkdir -p /var/www/html
+# Copy the package.json file and install dependencies
+COPY package.json ./
+RUN npm install
 
-# Copy the HTML file to the server directory
-COPY index.html /var/www/html/
-COPY styles.css /var/www/html/
-COPY script.js /var/www/html/
+# Copy the rest of the application code to the working directory
+COPY . .
 
-# Set the working directory
-WORKDIR /var/www/html
+# Expose the port the app runs on
+EXPOSE 8080
 
-# Expose port 80
-EXPOSE 80
-
-# Start a simple Python HTTP server
-CMD ["python3", "-m", "http.server", "80"]
+# Start the application
+CMD ["npm", "start"]
