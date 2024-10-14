@@ -4,16 +4,16 @@ env:
   variables:
     AWS_REGION: "us-east-1"
     AWS_ACCOUNT_ID: "905418229977"
-    REPO_NAME: "ecs-fargate-app"          # Ensure the repository name matches your ECR repository
-    IMAGE_TAG: "latest"                   # Standardized Docker tag (no special characters)
+    REPO_NAME: "ecs-fargate-app"   # Updated the repo name to match ECR
+    IMAGE_TAG: "nginx-latest"      # Changed tag to match Docker conventions (no special characters)
     ECS_CONTAINER_NAME: "web-app-container"
 
 phases:
   pre_build:
     commands:
       - echo "Starting pre-build stage..."
-      - echo "Logging in to Docker Hub..."
-      - echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
+      - echo "Logging in to Docker Hub using access token..."
+      - echo dckr_pat_BLGX_Mo4j1b_XbCc-W8yHMjNkDU | docker login --username mark235 --password-stdin
       - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       - echo "Pre-build stage completed."
