@@ -2,11 +2,10 @@ version: 0.2
 
 env:
   variables:
-    AWS_REGION: "us-east-1"                  # e.g., us-west-2
-    AWS_ACCOUNT_ID: "905418229977"            # Your AWS account ID
-    REPO_NAME: "ECS-and-Fargate-deployment-using-AWS-CodePipeline"  # ECR Repo Name
-    IMAGE_TAG: "nginx:latest"                 # Image tag
-    ecs_container_name: "web-app-container"   # Container name
+    AWS_REGION: "us-east-1"                         # AWS Region
+    AWS_ACCOUNT_ID: "905418229977"                  # Your AWS account ID
+    REPO_NAME: "ecs-fargate-app"                    # ECR Repo Name
+    ecs_container_name: "web-app-container"         # ECS Container Name
 
 phases:
   pre_build:
@@ -14,14 +13,15 @@ phases:
       - echo "Starting pre-build stage..."
       - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-      - echo "Defining variables for the repository and image tag..."
-      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME
       - echo "Pre-build stage completed."
 
   build:
     commands:
       - echo "Starting build stage..."
       - echo "Building the Docker image..."
+      # Use a valid Docker tag format, using the first 7 characters of the commit hash for IMAGE_TAG
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
       - echo "Build stage completed."
 
