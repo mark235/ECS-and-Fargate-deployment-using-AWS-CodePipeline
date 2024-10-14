@@ -1,18 +1,36 @@
 version: 0.2
 
+env:
+  variables:
+    AWS_REGION: "us-east-1"                  # e.g., us-west-2
+    AWS_ACCOUNT_ID: "905418229977"      # e.g., 123456789012
+    REPO_NAME: "ECS-and-Fargate-deployment-using-AWS-CodePipeline"                # e.g., ECR Repo Name
+    IMAGE_TAG: "nginx:latest" 
+    ecs_container_name: "web-app-container"                       # You can change this if needed
 phases:
-  install:
+  pre_build:
     commands:
-      - echo Installing Dependencies
-      - apt-get update
-      - apt-get install -y aws-cli
+      - echo "Starting pre-build stage..."
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
+      - echo "Defining variables for the repository and image tag..."
+      - REPOSITORY_URI=<aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/<repository_name>
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo "Pre-build stage completed."
   build:
     commands:
-      - echo Build started on `date`
-      - echo Build completed on `date`
+      - echo "Starting build stage..."
+      - echo "Building the Docker image..."
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - echo "Build stage completed."
   post_build:
     commands:
-      - echo Build completed successfully.
+      - echo "Starting post-build stage..."
+      - echo "Pushing the Docker image to Amazon ECR..."
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo "Writing image definitions file..."
+      - printf '[{"name":"<container_name>","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - echo "Post-build stage completed."
 artifacts:
   files:
-    - '**/*'
+    - imagedefinitions.json
