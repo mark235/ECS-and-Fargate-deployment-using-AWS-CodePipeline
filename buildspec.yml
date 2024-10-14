@@ -3,34 +3,37 @@ version: 0.2
 env:
   variables:
     AWS_REGION: "us-east-1"                  # e.g., us-west-2
-    AWS_ACCOUNT_ID: "905418229977"      # e.g., 123456789012
-    REPO_NAME: "ECS-and-Fargate-deployment-using-AWS-CodePipeline"                # e.g., ECR Repo Name
-    IMAGE_TAG: "nginx:latest" 
-    ecs_container_name: "web-app-container"                       # You can change this if needed
+    AWS_ACCOUNT_ID: "905418229977"            # Your AWS account ID
+    REPO_NAME: "ECS-and-Fargate-deployment-using-AWS-CodePipeline"  # ECR Repo Name
+    IMAGE_TAG: "nginx:latest"                 # Image tag
+    ecs_container_name: "web-app-container"   # Container name
+
 phases:
   pre_build:
     commands:
       - echo "Starting pre-build stage..."
       - echo "Logging in to Amazon ECR..."
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.us-east-1.amazonaws.com
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       - echo "Defining variables for the repository and image tag..."
-      - REPOSITORY_URI=<aws_account_id>.dkr.ecr.us-east-1.amazonaws.com/<repository_name>
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME
       - echo "Pre-build stage completed."
+
   build:
     commands:
       - echo "Starting build stage..."
       - echo "Building the Docker image..."
       - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
       - echo "Build stage completed."
+
   post_build:
     commands:
       - echo "Starting post-build stage..."
       - echo "Pushing the Docker image to Amazon ECR..."
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - echo "Writing image definitions file..."
-      - printf '[{"name":"<container_name>","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' $ecs_container_name $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - echo "Post-build stage completed."
+
 artifacts:
   files:
     - imagedefinitions.json
