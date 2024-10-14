@@ -1,7 +1,7 @@
 {
   "name": "web-app",
   "version": "1.0.0",
-  "description": "A sample web application",
+  "description": "Sample Node.js app for deployment",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
