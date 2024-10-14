@@ -12,9 +12,12 @@ phases:
   pre_build:
     commands:
       - echo "Starting pre-build stage..."
+      - echo "Logging in to Docker Hub..."
+      - echo $DOCKERHUB_PASSWORD | docker login --username $DOCKERHUB_USERNAME --password-stdin
       - echo "Logging in to Amazon ECR..."
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       - echo "Pre-build stage completed."
+
 
   build:
     commands:
@@ -29,9 +32,9 @@ phases:
       - echo "Pushing the Docker image to Amazon ECR..."
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG
       - echo "Writing image definitions file..."
-      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG > imagedefinitions.json
+      - printf '[{"name":"%s","imageUri":"%s"}]' $ECS_CONTAINER_NAME $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$REPO_NAME:$IMAGE_TAG > /codebuild/output/imagedefinitions.json
       - echo "Post-build stage completed."
-
 artifacts:
   files:
-    - imagedefinitions.json
+    - /codebuild/output/imagedefinitions.json
+
