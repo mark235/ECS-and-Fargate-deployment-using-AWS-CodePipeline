@@ -16,6 +16,10 @@ Before proceeding, ensure you have the following:
 
 ## Project Structure
 
+The Project Architecture is provided as below:
+
+[![Architecture Diagram](structure.png)](structure.png)
+
 Here is the structure of the project repository:
 
 ```plaintext
